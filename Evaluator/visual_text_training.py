@@ -164,17 +164,20 @@ class VisualEncoder(nn.Module):
 
 
 class BERTModelModule(nn.Module):
-    def __init__(self, model_name: str, use_classification_head=False):
+    def __init__(self, model_name: str, use_classification_head=False, classification_weight=0.9):
         super(BERTModelModule, self).__init__()
         self.bert_model = BertModel.from_pretrained(model_name)
         self.tokenizer = BertTokenizer.from_pretrained(model_name)
         self.use_classification_head = use_classification_head
+        self.classification_weight = classification_weight
         self.visual_encoder = VisualEncoder()
-        if self.use_classification_head:
-            self.classifier = nn.Linear(self.bert_model.config.hidden_size + 2048, 2)  # 用于二分类任务
-            self.ce_loss_fn = nn.CrossEntropyLoss()  # 交叉熵损失函数
-        self.regressor = nn.Linear(self.bert_model.config.hidden_size + 2048, 1)  # 用于回归任务
         self.custom_loss_fn = CustomLoss()
+
+        if self.use_classification_head:
+            self.classifier = nn.Linear(self.bert_model.config.hidden_size + 2048, 2)
+            self.ce_loss_fn = nn.CrossEntropyLoss()
+
+        self.regressor = nn.Linear(self.bert_model.config.hidden_size + 2048, 1)
 
     def forward(self, images, input_ids, attention_mask):
         visual_features = self.visual_encoder(images)
@@ -188,7 +191,8 @@ class BERTModelModule(nn.Module):
         score = self.regressor(combined_features)
         return logits, score
 
-    def compute_loss_and_scores(self, batch, weight=classification_weight):
+    def compute_loss_and_scores(self, batch):
+        weight = self.classification_weight
         images, hypo_premise_inputs, hypo_update_inputs, update_types = batch
 
         if hypo_premise_inputs and hypo_premise_inputs['input_ids'].numel() > 0:
@@ -231,13 +235,13 @@ class BERTModelModule(nn.Module):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_csv_file', type=str, default='/home/lxj220018/clipscore/DVE_train.csv',
+    parser.add_argument('--train_csv_file', type=str, default='../Data/DVE_train.csv ',
                         help='CSV file containing image paths, captions, and targets for training.')
-    parser.add_argument('--val_csv_file', type=str, default='/home/lxj220018/clipscore/DVE_dev.csv',
+    parser.add_argument('--val_csv_file', type=str, default='../Data/DVE_dev.csv',
                         help='CSV file containing image paths, captions, and targets for validation.')
-    parser.add_argument('--test_csv_file', type=str, default='/home/lxj220018/clipscore/DVE_test.csv',
+    parser.add_argument('--test_csv_file', type=str, default='../Data/DVE_test.csv',
                         help='CSV file containing image paths, captions, and targets for testing.')
-    parser.add_argument('--image_dir', type=str, default='/home/lxj220018/defeasible/defeasible-snli/flickr30k_images',
+    parser.add_argument('--image_dir', type=str, default='/home/yxz230014/Defeasible_Visual_Entailment_agent_test/Data/flickr30k_images',
                         help='Directory containing images.')
     parser.add_argument('--epochs', type=int, default=20, help='Number of epochs for fine-tuning.')
     parser.add_argument('--lr', type=float, default=5e-6, help='Learning rate for fine-tuning.')
@@ -252,7 +256,7 @@ def parse_args():
     parser.add_argument('--output_file', type=str, default='test_results.csv',
                         help='File to save the test results.')
     parser.add_argument('--gpu', type=int, default=7)
-    parser.add_argument('--classification_weight', action=float, help='The weight for classification loss.')
+    parser.add_argument('--classification_weight', type=float, help='The weight for classification loss.')
     parser.add_argument('--use_classification_head', action='store_true', help='Whether to use classification head.')
     return parser.parse_args()
 
