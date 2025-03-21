@@ -49,6 +49,7 @@ To train the model, run the following command:
 python visual_text_training.py \
   --train_csv_file ../Data/DVE_train.csv \
   --val_csv_file ../Data/DVE_dev.csv \
+  --test_csv_file ../Data/DVE_test.csv \
   --image_dir ../Data/flickr30k_images \
   --epochs 20 \
   --lr 5e-6 \
