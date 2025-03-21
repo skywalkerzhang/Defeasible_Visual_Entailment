@@ -47,15 +47,16 @@ To train the model, run the following command:
 
 ```bash
 python visual_text_training.py \
-  --train_csv_file Data/DVE_train.csv \
-  --val_csv_file Data/DVE_dev.csv \
-  --image_dir Data/flickr30k_images \
+  --train_csv_file ../Data/DVE_train.csv \
+  --val_csv_file ../Data/DVE_dev.csv \
+  --image_dir ../Data/flickr30k_images \
   --epochs 20 \
   --lr 5e-6 \
   --batch_size 32 \
   --wandb_project "Defeasible_Visual_Entailment" \
   --output_model "DVE_model.pth" \
   --gpu 0 \
+  --classification_weight 0.9 \
   --use_classification_head
 ```
 
@@ -86,9 +87,9 @@ curl -L "https://huggingface.co/skywalkerzhang19/DVE_evaluator/resolve/main/eval
 To evaluate the model, use the following command:
 ```bash
 python visual_text_inference.py \
-  --test_csv_file Data/DVE_test.csv \
-  --image_dir Data/flickr30k_images \
-  --model_path Evaluator/evaluator_weights.pth \
+  --test_csv_file ../Data/DVE_test.csv \
+  --image_dir ../Data/flickr30k_images \
+  --model_path evaluator_weights.pth \
   --output_file "test_results.csv" \
   --gpu 0 \
   --test_batch_size 64
