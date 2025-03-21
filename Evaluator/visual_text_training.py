@@ -241,7 +241,7 @@ def parse_args():
                         help='CSV file containing image paths, captions, and targets for validation.')
     parser.add_argument('--test_csv_file', type=str, default='../Data/DVE_test.csv',
                         help='CSV file containing image paths, captions, and targets for testing.')
-    parser.add_argument('--image_dir', type=str, default='/home/yxz230014/Defeasible_Visual_Entailment_agent_test/Data/flickr30k_images',
+    parser.add_argument('--image_dir', type=str, default='../Data/flickr30k_images',
                         help='Directory containing images.')
     parser.add_argument('--epochs', type=int, default=20, help='Number of epochs for fine-tuning.')
     parser.add_argument('--lr', type=float, default=5e-6, help='Learning rate for fine-tuning.')
